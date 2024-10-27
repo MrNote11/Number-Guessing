@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finding a Number Guessing Game</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'styles.css' %}">
+  <script>
+    let timeLeft = {{ time_limit }}; // Time limit in seconds
+    function startTimer() {
+      let timer = document.getElementById('timer');
+      let interval = setInterval(function () {
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          document.getElementById('gameForm').submit(); // Automatically submit the form
+        } else {
+          timer.innerHTML = timeLeft + ' seconds remaining';
+        }
+        timeLeft -= 1;
+      }, 1000);
+    }
+    window.onload = startTimer;
+  </script>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Welcome to the Finding a Number Game</h1>
+    <p>This is the home page of the game.</p>
+
+    {% if user.is_authenticated %}
+    <p>Hello, {{ user.username }}! <a href="{% url 'logout' %}">Logout</a></p>
+    <p>Your Score: {{ user.profile.score }}</p>
+    {% else %}
+    <div class="auth-links">
+      <a href="{% url 'login' %}">Login</a> | <a href="{% url 'register' %}">Register</a>
+    </div>
+    {% endif %}
+
+    <div id="timer"></div> <!-- Countdown Timer -->
+
+    <div class="grid">
+      {% for row in grid %}
+      {% for letter in row %}
+      <div class="cell">{{ letter }}</div>
+      {% endfor %}
+      {% endfor %}
+    </div>
+
+    <form method="POST" id="gameForm">
+      {% csrf_token %}
+      {{ form.number.label_tag }} {{ form.number }}
+      {{ form.difficulty.label_tag }} {{ form.difficulty }}
+      <button type="submit">Submit</button>
+    </form>
+
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" name="request_hint">Hint</button>
+    </form>
+
+    <div class="message">{{ message }}</div>
+
+    <div class="navigation">
+      <a href="{% url 'leaderboard' %}">View Leaderboard</a>
+      <a href="{% url 'contact_us' %}">Contact Us</a>
+      <a href="{% url 'submit_feedback' %}">Submit Feedback</a>
+    </div>
+
+    <div class="educational-content">
+      <h2>Number of the Day</h2>
+      {% if number_of_the_day %}
+      <p><strong>{{ number_of_the_day.value }}</strong>: {{ number_of_the_day.definition }}</p>
+      {% endif %}
+    </div>
+  </div>
+</body>
+
+</html>
